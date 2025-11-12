@@ -2,7 +2,7 @@
     "name": "spin-framework",
     "title": "Spin Framework",
     "version": "0.0.34",
-    "homepage": "https://github.com/Celarius/spin-framework",
+    "homepage": "https://github.com/EWQ-Zone-Oy/spin-framework",
     "description": "A super lightweight PHP UI/REST Framework",
     "author": {
         "name": "Kim Sandell",
@@ -20,11 +20,11 @@
         }
     ],
     "bugs": {
-        "url": "https://github.com/Celarius/spin-framework/issues"
+        "url": "https://github.com/EWQ-Zone-Oy/spin-framework/issues"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/Celarius/spin-framework"
+        "url": "https://github.com/EWQ-Zone-Oy/spin-framework"
     },
     "scripts": {},
     "devDependencies": {}
