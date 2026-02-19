@@ -125,7 +125,7 @@ class Redis extends AbstractCacheAdapter
 
   public function clear(): bool
   {
-    return true;
+    return $this->redisClient->flushdb() !== null;
   }
 
   public function getMultiple($keys, mixed $default = null): iterable
