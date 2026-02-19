@@ -15,13 +15,13 @@ class RedisTest extends TestCase
     try {
       $this->cacheObj = new Redis([
         'options' => [
-          'host' => '127.0.0.1',
+          'host' => 'redis',
           'port' => 6379
         ]
       ]);
       
-      // Clear any existing data before tests
-      $this->cacheObj->clear();
+      // Verify connection works before running tests
+      $this->cacheObj->has('_connection_test');
     } catch (\Exception $e) {
       $this->markTestSkipped('Redis server is not available: ' . $e->getMessage());
     }
@@ -358,7 +358,7 @@ class RedisTest extends TestCase
     // Create new instance
     $newInstance = new Redis([
       'options' => [
-        'host' => '127.0.0.1',
+        'host' => 'redis',
         'port' => 6379
       ]
     ]);
