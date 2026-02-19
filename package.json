@@ -1,7 +1,7 @@
 {
     "name": "spin-framework",
     "title": "Spin Framework",
-    "version": "0.0.34",
+    "version": "0.0.35",
     "homepage": "https://github.com/EWQ-Zone-Oy/spin-framework",
     "description": "A super lightweight PHP UI/REST Framework",
     "author": {

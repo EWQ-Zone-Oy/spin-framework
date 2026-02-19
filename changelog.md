@@ -1,6 +1,9 @@
-
 # Changelog
 SPIN Framework Changelog
+
+## 0.0.35
+- Updated version of library dependency firebase to comply with security advisories
+- Minor updates to Redis adapter and remoed Pdo drivers
 
 ## 0.0.34
 - Bugfix on PDO not correctly parsing default options
