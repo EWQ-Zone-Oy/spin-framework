@@ -13,16 +13,18 @@ class RedisTest extends TestCase
   public function setUp(): void
   {
     try {
-      $this->cacheObj = new Redis([
+      $redis = new Redis([
         'options' => [
           'host' => 'redis',
           'port' => 6379
         ]
       ]);
-      
+
       // Verify connection works before running tests
-      $this->cacheObj->has('_connection_test');
+      $redis->has('_connection_test');
+      $this->cacheObj = $redis;
     } catch (\Exception $e) {
+      $this->cacheObj = null;
       $this->markTestSkipped('Redis server is not available: ' . $e->getMessage());
     }
   }
@@ -30,8 +32,12 @@ class RedisTest extends TestCase
   public function tearDown(): void
   {
     if ($this->cacheObj !== null) {
-      // Clean up after tests
-      $this->cacheObj->clear();
+      try {
+        $this->cacheObj->clear();
+      } catch (\Exception $e) {
+        // Ignore cleanup errors when Redis is unavailable
+      }
+      $this->cacheObj = null;
     }
   }
 
