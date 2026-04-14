@@ -9,6 +9,9 @@ on:
     branches:
       - master
 
+permissions:
+  contents: write
+
 jobs:
   create-release:
     # Only run when PR is merged or direct push to master
