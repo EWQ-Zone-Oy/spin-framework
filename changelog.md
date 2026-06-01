@@ -1,6 +1,11 @@
 # Changelog
 SPIN Framework Changelog
 
+## 0.0.37
+- Added `.editorconfig`
+- Added PHP 8.5 to the CI
+- Added support for environment variable overrides for the `config()` function (reading only)
+
 ## 0.0.36
 - Add ECS logging support
 

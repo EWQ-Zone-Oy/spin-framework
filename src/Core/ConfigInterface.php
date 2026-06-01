@@ -50,10 +50,12 @@ interface ConfigInterface
    * @param      string  $key      "." notationed key to retreive
    * @param      mixed   $default  Optional Default value if group::section::key
    *                               not found
+   * @param      bool    $env      Whether to load from the environment variable
+   *                               or not. Names are canonicalized: a.b => A_B
    *
    * @return     mixed
    */
-  function get(string $key, $default=null);
+  function get(string $key, $default = null, bool $env = true);
 
   /**
    * Set a config item
