@@ -198,7 +198,55 @@ class Config extends AbstractBaseClass implements ConfigInterface
       }
     }
 
-    return $val ?? $default;
+    $val = $val ?? $default;
+
+    // When the resolved value is an array, its individual leaves can still be
+    // overridden by environment variables. This way consumers that read a
+    // whole sub-tree (e.g. config('connections.default') in ConnectionManager)
+    // also honour overrides such as CONNECTIONS_DEFAULT_HOST.
+    if ($env && \is_array($val)) {
+      $val = $this->overrideArrayFromEnv($val, $key);
+    }
+
+    return $val;
+  }
+
+  /**
+   * Recursively override array leaves from matching environment variables.
+   *
+   * Each leaf's variable name is its full dot-path canonicalized to
+   * UPPER_SNAKE. The environment-prefixed name takes precedence, e.g.
+   * connections.default.host resolves DOCKER_CONNECTIONS_DEFAULT_HOST first,
+   * then CONNECTIONS_DEFAULT_HOST. Unset variables leave the value untouched.
+   *
+   * @param      array   $values  The resolved sub-tree
+   * @param      string  $prefix  The dot-path of $values within the config
+   *
+   * @return     array
+   */
+  private function overrideArrayFromEnv(array $values, string $prefix): array
+  {
+    foreach ($values as $key => $value) {
+      $path = $prefix . '.' . $key;
+
+      if (\is_array($value)) {
+        $values[$key] = $this->overrideArrayFromEnv($value, $path);
+        continue;
+      }
+
+      $envVal = $this->getByEnv($this->environment . '.' . $path, $value);
+      if ($envVal !== $value) {
+        $values[$key] = $envVal;
+        continue;
+      }
+
+      $envVal = $this->getByEnv($path, $value);
+      if ($envVal !== $value) {
+        $values[$key] = $envVal;
+      }
+    }
+
+    return $values;
   }
 
   /**
