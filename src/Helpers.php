@@ -85,12 +85,14 @@ if (!\function_exists('config')) {
   /**
    * Get/Set a Config key/value
    *
-   * @param      ?string  $key    The key in DOt format
+   * @param      ?string $key    The key in DOt format
    * @param      mixed   $value  The value to set
+   * @param      bool    $env    Whether to load from the environment variable
+   *                             or not. Names are canonicalized: a.b => A_B
    *
    * @return     mixed
    */
-  function config(?string $key = null, mixed $value = null): mixed
+  function config(?string $key = null, mixed $value = null, bool $env = true): mixed
   {
     global $app;
 
@@ -106,7 +108,7 @@ if (!\function_exists('config')) {
 
     if (\is_null($value)) {
       # Return config Key's value
-      return $config->get($key);
+      return $config->get($key, null, $env);
     }
 
     # Set config $key to $value

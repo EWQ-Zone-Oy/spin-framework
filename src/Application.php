@@ -221,8 +221,8 @@ class Application extends AbstractBaseClass implements ApplicationInterface
 
       # Set paths
       $this->basePath = \realpath($basePath);
-      $this->appPath = $this->basePath . '/app';
-      $this->storagePath = $this->basePath . '/storage';
+      $this->appPath = $this->basePath . \DIRECTORY_SEPARATOR . 'app';
+      $this->storagePath = $this->basePath . \DIRECTORY_SEPARATOR . 'storage';
 
       # Create config
       $this->config = new Config($this->appPath, $this->getEnvironment());

@@ -55,9 +55,22 @@ $val = app('code');
 ## 1.3. config()
 The `config()` function is used to retreive the config object, or to get/set a specific config key (or array). If the additional `$value` parameter is given the config `$key` is set to that value.
 
+If the `$env` parameter is set to `true` (default), then the value is first attempted to be resolved by looking for environment variables. Environment variables are always attempted to be resolved 
+first before loading from the config internally, as it serves as an override hook.
+
+The name of the environment variable is determined based on the `$key` parameter, so for `config('application.code')` then environment variable will be `APPLICATION_CODE`. If the 
+configuration object was loaded for a specific environment, e.g. `config-dev.json` then `DEV_APPLICATION_CODE`.
+
+The lookup priority for `config('application.code')` therefore is:
+1. (if `$env = true`, default and environment is `dev`) Look for `DEV_APPLICATION_CODE`, if it exists, return
+2. (if `$env = true`, default) Look for `APPLICATION_CODE`, if it exists, return
+3. Fetch the value `application.code` from the respective configuration environment json file
+
+*Note that environment variables are resolved using the `env()` function internally*
+
 *Note that the key name is a dot notation. Example: "application.maintenance" gives maintenance key in application array*
 ```php
-function config(string $key=null, string $value=null)
+function config(string $key = null, string $value = null, bool $env = true)
 ```
 ```php
 $val = config('application.maintenance');

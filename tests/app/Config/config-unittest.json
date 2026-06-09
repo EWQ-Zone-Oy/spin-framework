@@ -1,0 +1,17 @@
+{
+  "application": {
+    "code": "from-json",
+    "debug": false,
+    "name": "spin-unittest"
+  },
+  "database": {
+    "host": "json-host",
+    "port": 3306
+  },
+  "nested": {
+    "deep": {
+      "value": "deep-json"
+    }
+  },
+  "list": ["a", "b", "c"]
+}

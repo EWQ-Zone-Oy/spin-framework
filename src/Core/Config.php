@@ -19,6 +19,9 @@ class Config extends AbstractBaseClass implements ConfigInterface
   /** @var  string        Config file name */
   protected string $filename;
 
+  /** @var string         Name of the environment */
+  protected string $environment;
+
   /**
    * Constructor
    *
@@ -35,6 +38,7 @@ class Config extends AbstractBaseClass implements ConfigInterface
 
     # Build $filename based on $appPath and $environment
     $filename = $appPath . \DIRECTORY_SEPARATOR . 'Config' . \DIRECTORY_SEPARATOR . 'config-' . $environment.'.json';
+    $this->environment = $environment;
 
     # Load the config
     $this->load($filename);
@@ -142,6 +146,14 @@ class Config extends AbstractBaseClass implements ConfigInterface
     }
   }
 
+  private function getByEnv(string $key, $default = null): mixed
+  {
+    return \env(
+      \str_replace('.', '_', \strtoupper($key)),
+      $default,
+    );
+  }
+
   /**
    * Get a config item
    *
@@ -152,11 +164,30 @@ class Config extends AbstractBaseClass implements ConfigInterface
    * @param      string  $key      "." notation key to retrieve
    * @param      mixed   $default  Optional Default value if group::section::key
    *                               not found
+   * @param      bool $env         Whether to load from the environment variable
+   *                               or not. Names are canonicalized: a.b => A_B
    *
    * @return     mixed
    */
-  public function get(string $key, $default = null): mixed
+  public function get(string $key, $default = null, bool $env = true): mixed
   {
+    if ($env) {
+      # Environment prefixed variable:
+      # application.code (env=dev) -> DEV_APPLICATION_CODE
+      $val = $this->getByEnv($this->environment . '.' . $key, $default);
+
+      if ($val !== $default) {
+        return $val;
+      }
+
+      # Fallback without env prefixed variable
+      $val = $this->getByEnv($key, $default);
+
+      if ($val !== $default) {
+        return $val;
+      }
+    }
+
     $keys = \explode('.',$key);
     $val = $this->confValues;
 
@@ -167,7 +198,55 @@ class Config extends AbstractBaseClass implements ConfigInterface
       }
     }
 
-    return $val ?? $default;
+    $val = $val ?? $default;
+
+    // When the resolved value is an array, its individual leaves can still be
+    // overridden by environment variables. This way consumers that read a
+    // whole sub-tree (e.g. config('connections.default') in ConnectionManager)
+    // also honour overrides such as CONNECTIONS_DEFAULT_HOST.
+    if ($env && \is_array($val)) {
+      $val = $this->overrideArrayFromEnv($val, $key);
+    }
+
+    return $val;
+  }
+
+  /**
+   * Recursively override array leaves from matching environment variables.
+   *
+   * Each leaf's variable name is its full dot-path canonicalized to
+   * UPPER_SNAKE. The environment-prefixed name takes precedence, e.g.
+   * connections.default.host resolves DOCKER_CONNECTIONS_DEFAULT_HOST first,
+   * then CONNECTIONS_DEFAULT_HOST. Unset variables leave the value untouched.
+   *
+   * @param      array   $values  The resolved sub-tree
+   * @param      string  $prefix  The dot-path of $values within the config
+   *
+   * @return     array
+   */
+  private function overrideArrayFromEnv(array $values, string $prefix): array
+  {
+    foreach ($values as $key => $value) {
+      $path = $prefix . '.' . $key;
+
+      if (\is_array($value)) {
+        $values[$key] = $this->overrideArrayFromEnv($value, $path);
+        continue;
+      }
+
+      $envVal = $this->getByEnv($this->environment . '.' . $path, $value);
+      if ($envVal !== $value) {
+        $values[$key] = $envVal;
+        continue;
+      }
+
+      $envVal = $this->getByEnv($path, $value);
+      if ($envVal !== $value) {
+        $values[$key] = $envVal;
+      }
+    }
+
+    return $values;
   }
 
   /**
