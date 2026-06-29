@@ -145,7 +145,16 @@ class PdoConnection extends \PDO implements PdoConnectionInterface
     $this->setOptions($pdoOptions);
 
     # Parent Constructor (PDO Class)
-    parent::__construct($this->getDsn(),$this->getUsername(),$this->getPassword(),$this->getOptions());
+    try {
+      parent::__construct($this->getDsn(),$this->getUsername(),$this->getPassword(),$this->getOptions());
+    } catch (\PDOException $e) {
+      // PDO::__construct() receives the DSN (with host), username and password as
+      // positional arguments, so PHP records them in the exception's stack trace.
+      // Rethrow a fresh exception so that credential-bearing frame is never
+      // propagated. We deliberately do not pass $e as previous, as its trace
+      // still carries those arguments.
+      throw new \PDOException($e->getMessage(), (int) $e->getCode());
+    }
 
     try {
       # Retrieve the Client Library Version (if supported)
