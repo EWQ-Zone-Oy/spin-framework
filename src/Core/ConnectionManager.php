@@ -158,22 +158,11 @@ class ConnectionManager extends AbstractBaseClass implements ConnectionManagerIn
         # Build the Classname
         $className = '\\Spin\\Database\\Drivers\\'.\ucfirst($params['type'] ?? '').'\\'.($params['driver'] ?? '') ;
 
-        try {
-          # Create the PdoConnection
-          $connection = new $className($connectionName, $params);
-        } catch (\Exception $e) {
-          # replace host/password from trace
-          $beforeTraceLength  = \strlen($e->getTraceAsString());
-          $trace              = $e->getTraceAsString();
-          $trace              = \str_replace($params['password'], "", $trace);
-
-          # throw new exception only if trace is modified
-          if($beforeTraceLength != \strlen($trace)) {
-            # new exception
-            throw new \Exception($e->getMessage(), $e->getCode());
-          }
-          throw $e;
-        }
+        # Create the PdoConnection. Credential redaction happens inside
+        # PdoConnection::__construct(), which rethrows a sanitized exception so
+        # the DSN/username/password passed to PDO::__construct() never reach the
+        # stack trace.
+        $connection = new $className($connectionName, $params);
       }
     }
 
