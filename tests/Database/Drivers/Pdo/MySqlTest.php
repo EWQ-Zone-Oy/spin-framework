@@ -108,6 +108,21 @@ class MySqlTest extends TestCase
   }
 
   /**
+   * Test setPort() accepts a numeric string and casts it to int
+   *
+   * Env-var bindings (e.g. CONNECTIONS_DEFAULT_PORT) always arrive as strings;
+   * setPort() must accept them without a TypeError and store an int.
+   */
+  public function testSetPortAcceptsNumericString(): void
+  {
+    $this->connection->setPort('3307');
+    $this->assertSame(3307, $this->connection->getPort());
+
+    $this->connection->setPort(3306);
+    $this->assertSame(3306, $this->connection->getPort());
+  }
+
+  /**
    * Test default PDO options are set when none provided
    */
   public function testDefaultPdoOptions(): void
