@@ -352,9 +352,9 @@ class PdoConnection extends \PDO implements PdoConnectionInterface
   /**
    * @inheritDoc
    */
-  public function setPort(int $port): self
+  public function setPort(int|string $port): self
   {
-    $this->port = $port;
+    $this->port = (int) $port;
 
     return $this;
   }

@@ -174,11 +174,14 @@ interface PdoConnectionInterface
   /**
    * Set port
    *
-   * @param      int    $port
+   * Accepts an int or a numeric string (env-var bindings arrive as strings) and
+   * casts it to int internally.
+   *
+   * @param      int|string  $port
    *
    * @return     self
    */
-  public function setPort(int $port): PdoConnectionInterface;
+  public function setPort(int|string $port): PdoConnectionInterface;
 
   /**
    * Set Driver
