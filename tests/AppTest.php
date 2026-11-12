@@ -321,6 +321,65 @@ class AppTest extends TestCase
   }
 
   /**
+   * The exception handler must not log call arguments (they can hold credentials)
+   */
+  public function testExceptionHandlerLogsTraceWithoutArgs(): void
+  {
+    $handler = new \Monolog\Handler\TestHandler();
+    $this->app->getLogger()->pushHandler($handler);
+
+    $exception = $this->throwWithSecretArg('db-password-123');
+
+    try {
+      ob_start();
+      $this->app->exceptionHandler($exception);
+      ob_end_clean();
+    } finally {
+      $this->app->getLogger()->popHandler();
+    }
+
+    $records = $handler->getRecords();
+    $this->assertCount(1, $records);
+
+    $context = $records[0]['context'];
+    $this->assertNotEmpty($context);
+    foreach ($context as $frame) {
+      $this->assertArrayNotHasKey('args', $frame);
+    }
+    $this->assertStringNotContainsString('db-password-123', \json_encode($context) ?: '');
+  }
+
+  /**
+   * traceWithoutArgs keeps the frame locations and drops only the args
+   */
+  public function testTraceWithoutArgsKeepsFrameLocations(): void
+  {
+    $exception = $this->throwWithSecretArg('db-password-123');
+
+    $trace = \Spin\Application::traceWithoutArgs($exception);
+
+    $this->assertCount(\count($exception->getTrace()), $trace);
+    $this->assertSame('throwWithSecretArgInner', $trace[0]['function']);
+    $this->assertArrayNotHasKey('args', $trace[0]);
+  }
+
+  private function throwWithSecretArg(string $password): \Exception
+  {
+    try {
+      $this->throwWithSecretArgInner($password);
+    } catch (\Exception $e) {
+      return $e;
+    }
+
+    return new \Exception('not thrown');
+  }
+
+  private function throwWithSecretArgInner(string $password): void
+  {
+    throw new \Exception('Connection failed');
+  }
+
+  /**
    * Test error handler
    */
   public function testErrorHandler(): void

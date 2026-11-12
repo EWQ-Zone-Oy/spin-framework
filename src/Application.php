@@ -750,13 +750,33 @@ class Application extends AbstractBaseClass implements ApplicationInterface
       \http_response_code(500);
     }
 
-    # Log the exception
+    // Log the exception. The trace is logged without call arguments: they can
+    // hold secrets such as DB credentials passed to connection helpers.
     $this->getLogger()->critical(
       $exception->getMessage().' in file '.$exception->getFile().' on line '.$exception->getLine(),
-      $exception->getTrace()
+      static::traceWithoutArgs($exception)
     );
 
     return null;
+  }
+
+  /**
+   * Stack trace of a Throwable with the call arguments removed from every frame
+   *
+   * @param   \Throwable  $exception
+   *
+   * @return  array<int, array<string, mixed>>
+   */
+  public static function traceWithoutArgs(\Throwable $exception): array
+  {
+    return \array_map(
+      static function (array $frame): array {
+        unset($frame['args']);
+
+        return $frame;
+      },
+      $exception->getTrace()
+    );
   }
 
   /**
